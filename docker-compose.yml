@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: ticketa-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ticketa
+      POSTGRES_USER: ticketa
+      POSTGRES_PASSWORD: ticketa123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7
+    container_name: ticketa-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: ticketa-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: ticketa-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - event-catalog-service
+      - booking-service
+    networks:
+      - ticketa-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: ticketa-auth-service
+    env_file:
+      - ./auth-service/local.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ticketa-network
+
+  event-catalog-service:
+    build: ./event-catalog-service
+    container_name: ticketa-event-catalog
+    env_file:
+      - ./event-catalog-service/local.env
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - ticketa-network
+
+  booking-service:
+    build: ./booking-service
+    container_name: ticketa-booking
+    env_file:
+      - ./booking-service/local.env
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ticketa-network
+
+  notification-ticket-service:
+    build: ./notification-ticket-service
+    container_name: ticketa-notification
+    env_file:
+      - ./notification-ticket-service/local.env
+    ports:
+      - "8084:8084"
+    depends_on:
+      - postgres
+    networks:
+      - ticketa-network
+
+networks:
+  ticketa-network:
+
+volumes:
+  postgres_data:
+  mongo_data:

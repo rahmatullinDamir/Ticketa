@@ -1,0 +1,1256 @@
+{
+  "configuration" : { },
+  "description" : "Production-grade event-driven ticketing system",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedAgent" : "structurizr-ui",
+  "lastModifiedDate" : "2026-03-29T19:55:44Z",
+  "model" : {
+    "people" : [ {
+      "description" : "Searches events and buys tickets",
+      "id" : "1",
+      "name" : "Client",
+      "properties" : {
+        "structurizr.dsl.identifier" : "client"
+      },
+      "relationships" : [ {
+        "description" : "Browse & purchase tickets",
+        "destinationId" : "11",
+        "id" : "77",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Browse & purchase tickets",
+        "destinationId" : "5",
+        "id" : "78",
+        "linkedRelationshipId" : "77",
+        "sourceId" : "1"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Creates and manages events",
+      "id" : "2",
+      "name" : "Organizer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "organizer"
+      },
+      "relationships" : [ {
+        "description" : "Manage events",
+        "destinationId" : "11",
+        "id" : "79",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Manage events",
+        "destinationId" : "5",
+        "id" : "80",
+        "linkedRelationshipId" : "79",
+        "sourceId" : "2"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "External payment provider",
+      "documentation" : { },
+      "id" : "3",
+      "name" : "Payment Gateway",
+      "properties" : {
+        "structurizr.dsl.identifier" : "paymentGateway"
+      },
+      "tags" : "Element,Software System"
+    }, {
+      "description" : "Email/SMS delivery service",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "Notification Provider",
+      "properties" : {
+        "structurizr.dsl.identifier" : "notificationProvider"
+      },
+      "tags" : "Element,Software System"
+    }, {
+      "containers" : [ {
+        "description" : "Bookings, payments, outbox (ACID)",
+        "documentation" : { },
+        "id" : "6",
+        "name" : "PostgreSQL",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.postgres"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Database"
+      }, {
+        "description" : "Event catalog (read-optimized)",
+        "documentation" : { },
+        "id" : "7",
+        "name" : "MongoDB",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.mongo"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Database"
+      }, {
+        "description" : "Distributed locks (SET NX + TTL), caching",
+        "documentation" : { },
+        "id" : "8",
+        "name" : "Redis",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.redis"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Cache"
+      }, {
+        "description" : "Event streaming platform (at-least-once, DLQ)",
+        "documentation" : { },
+        "id" : "9",
+        "name" : "Kafka",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.kafka"
+        },
+        "relationships" : [ {
+          "description" : "consume booking-created",
+          "destinationId" : "35",
+          "id" : "71",
+          "sourceId" : "9",
+          "tags" : "Relationship"
+        }, {
+          "description" : "consume payment-failed (release seats)",
+          "destinationId" : "19",
+          "id" : "74",
+          "sourceId" : "9",
+          "tags" : "Relationship"
+        }, {
+          "description" : "consume payment-success",
+          "destinationId" : "47",
+          "id" : "75",
+          "sourceId" : "9",
+          "tags" : "Relationship"
+        }, {
+          "description" : "consume payment-success",
+          "destinationId" : "57",
+          "id" : "76",
+          "sourceId" : "9",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Message Broker"
+      }, {
+        "description" : "Ticket PDF storage",
+        "documentation" : { },
+        "id" : "10",
+        "name" : "MinIO",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.minio"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Object Storage"
+      }, {
+        "description" : "Routing, JWT validation, rate limiting, circuit breaker",
+        "documentation" : { },
+        "id" : "11",
+        "name" : "API Gateway",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.gateway"
+        },
+        "relationships" : [ {
+          "description" : "Authenticate",
+          "destinationId" : "12",
+          "id" : "66",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Search events",
+          "destinationId" : "13",
+          "id" : "67",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Create booking",
+          "destinationId" : "19",
+          "id" : "68",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Cloud Gateway"
+      }, {
+        "description" : "Authentication, JWT issuing",
+        "documentation" : { },
+        "id" : "12",
+        "name" : "Auth Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.auth"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "14",
+          "name" : "Catalog Service",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.catalog.catalogService"
+          },
+          "relationships" : [ {
+            "destinationId" : "15",
+            "id" : "16",
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Catalog Repository",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.catalog.catalogRepository"
+          },
+          "relationships" : [ {
+            "destinationId" : "7",
+            "id" : "17",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Event search (CQRS read model)",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Event Catalog Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.catalog"
+        },
+        "relationships" : [ {
+          "destinationId" : "7",
+          "id" : "18",
+          "linkedRelationshipId" : "17",
+          "sourceId" : "13"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "20",
+          "name" : "Booking Controller",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.booking.controller"
+          },
+          "relationships" : [ {
+            "destinationId" : "21",
+            "id" : "25",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "21",
+          "name" : "Booking Service",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.booking.service"
+          },
+          "relationships" : [ {
+            "destinationId" : "22",
+            "id" : "26",
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "23",
+            "id" : "27",
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "24",
+            "id" : "28",
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Redis SET NX + TTL",
+          "documentation" : { },
+          "id" : "22",
+          "name" : "Seat Lock Manager",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.booking.lockManager"
+          },
+          "relationships" : [ {
+            "destinationId" : "8",
+            "id" : "31",
+            "sourceId" : "22",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "23",
+          "name" : "Booking Repository",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.booking.repository"
+          },
+          "relationships" : [ {
+            "destinationId" : "6",
+            "id" : "29",
+            "sourceId" : "23",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Transactional outbox",
+          "documentation" : { },
+          "id" : "24",
+          "name" : "Outbox Publisher",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.booking.outbox"
+          },
+          "relationships" : [ {
+            "destinationId" : "9",
+            "id" : "33",
+            "sourceId" : "24",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Seat reservation + saga initiator",
+        "documentation" : { },
+        "id" : "19",
+        "name" : "Booking Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.booking"
+        },
+        "relationships" : [ {
+          "destinationId" : "6",
+          "id" : "30",
+          "linkedRelationshipId" : "29",
+          "sourceId" : "19"
+        }, {
+          "destinationId" : "8",
+          "id" : "32",
+          "linkedRelationshipId" : "31",
+          "sourceId" : "19"
+        }, {
+          "destinationId" : "9",
+          "id" : "34",
+          "linkedRelationshipId" : "33",
+          "sourceId" : "19"
+        }, {
+          "description" : "booking-created",
+          "destinationId" : "9",
+          "id" : "69",
+          "sourceId" : "19",
+          "tags" : "Relationship"
+        }, {
+          "description" : "booking-cancelled",
+          "destinationId" : "9",
+          "id" : "70",
+          "sourceId" : "19",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "36",
+          "name" : "Kafka Consumer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.payment.consumer"
+          },
+          "relationships" : [ {
+            "destinationId" : "37",
+            "id" : "39",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "9",
+            "id" : "44",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Idempotent",
+          "documentation" : { },
+          "id" : "37",
+          "name" : "Payment Processor",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.payment.processor"
+          },
+          "relationships" : [ {
+            "destinationId" : "3",
+            "id" : "40",
+            "sourceId" : "37",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "38",
+            "id" : "43",
+            "sourceId" : "37",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "38",
+          "name" : "Outbox Publisher",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.payment.outbox"
+          },
+          "relationships" : [ {
+            "destinationId" : "9",
+            "id" : "46",
+            "sourceId" : "38",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Processes payments (idempotent)",
+        "documentation" : { },
+        "id" : "35",
+        "name" : "Payment Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.payment"
+        },
+        "relationships" : [ {
+          "destinationId" : "3",
+          "id" : "41",
+          "linkedRelationshipId" : "40",
+          "sourceId" : "35"
+        }, {
+          "destinationId" : "9",
+          "id" : "45",
+          "linkedRelationshipId" : "44",
+          "sourceId" : "35"
+        }, {
+          "description" : "payment-success",
+          "destinationId" : "9",
+          "id" : "72",
+          "sourceId" : "35",
+          "tags" : "Relationship"
+        }, {
+          "description" : "payment-failed",
+          "destinationId" : "9",
+          "id" : "73",
+          "sourceId" : "35",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "48",
+          "name" : "Kafka Consumer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.ticket.consumer"
+          },
+          "relationships" : [ {
+            "destinationId" : "49",
+            "id" : "51",
+            "sourceId" : "48",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "9",
+            "id" : "55",
+            "sourceId" : "48",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "49",
+          "name" : "PDF Generator",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.ticket.generator"
+          },
+          "relationships" : [ {
+            "destinationId" : "50",
+            "id" : "52",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "50",
+          "name" : "Storage Service",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.ticket.storage"
+          },
+          "relationships" : [ {
+            "destinationId" : "10",
+            "id" : "53",
+            "sourceId" : "50",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Generates ticket PDFs",
+        "documentation" : { },
+        "id" : "47",
+        "name" : "Ticket Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.ticket"
+        },
+        "relationships" : [ {
+          "destinationId" : "10",
+          "id" : "54",
+          "linkedRelationshipId" : "53",
+          "sourceId" : "47"
+        }, {
+          "destinationId" : "9",
+          "id" : "56",
+          "linkedRelationshipId" : "55",
+          "sourceId" : "47"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      }, {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "58",
+          "name" : "Kafka Consumer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.notification.consumer"
+          },
+          "relationships" : [ {
+            "destinationId" : "59",
+            "id" : "60",
+            "sourceId" : "58",
+            "tags" : "Relationship"
+          }, {
+            "destinationId" : "9",
+            "id" : "64",
+            "sourceId" : "58",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        }, {
+          "description" : "Idempotent",
+          "documentation" : { },
+          "id" : "59",
+          "name" : "Notification Sender",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ticketa.notification.notifier"
+          },
+          "relationships" : [ {
+            "destinationId" : "4",
+            "id" : "61",
+            "sourceId" : "59",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component"
+        } ],
+        "description" : "Sends email/SMS (idempotent)",
+        "documentation" : { },
+        "id" : "57",
+        "name" : "Notification Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ticketa.notification"
+        },
+        "relationships" : [ {
+          "destinationId" : "4",
+          "id" : "62",
+          "linkedRelationshipId" : "61",
+          "sourceId" : "57"
+        }, {
+          "destinationId" : "9",
+          "id" : "65",
+          "linkedRelationshipId" : "64",
+          "sourceId" : "57"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Spring Boot"
+      } ],
+      "description" : "Event-driven ticket booking system (Choreography Saga)",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "Ticketa Platform",
+      "properties" : {
+        "structurizr.dsl.identifier" : "ticketa"
+      },
+      "relationships" : [ {
+        "destinationId" : "3",
+        "id" : "42",
+        "linkedRelationshipId" : "40",
+        "sourceId" : "5"
+      }, {
+        "destinationId" : "4",
+        "id" : "63",
+        "linkedRelationshipId" : "61",
+        "sourceId" : "5"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "Ticketa Platform",
+  "properties" : {
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.error" : "114",
+    "structurizr.inspection.warning" : "0",
+    "structurizr.dsl" : "d29ya3NwYWNlICJUaWNrZXRhIFBsYXRmb3JtIiAiUHJvZHVjdGlvbi1ncmFkZSBldmVudC1kcml2ZW4gdGlja2V0aW5nIHN5c3RlbSIgewoKICAgICFpZGVudGlmaWVycyBoaWVyYXJjaGljYWwKCiAgICBtb2RlbCB7CgogICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgIyBVU0VSUwogICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgY2xpZW50ID0gcGVyc29uICJDbGllbnQiICJTZWFyY2hlcyBldmVudHMgYW5kIGJ1eXMgdGlja2V0cyIKICAgICAgICBvcmdhbml6ZXIgPSBwZXJzb24gIk9yZ2FuaXplciIgIkNyZWF0ZXMgYW5kIG1hbmFnZXMgZXZlbnRzIgoKICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICMgRVhURVJOQUwgU1lTVEVNUwogICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgcGF5bWVudEdhdGV3YXkgPSBzb2Z0d2FyZVN5c3RlbSAiUGF5bWVudCBHYXRld2F5IiAiRXh0ZXJuYWwgcGF5bWVudCBwcm92aWRlciIKICAgICAgICBub3RpZmljYXRpb25Qcm92aWRlciA9IHNvZnR3YXJlU3lzdGVtICJOb3RpZmljYXRpb24gUHJvdmlkZXIiICJFbWFpbC9TTVMgZGVsaXZlcnkgc2VydmljZSIKCiAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAjIE1BSU4gU1lTVEVNCiAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICB0aWNrZXRhID0gc29mdHdhcmVTeXN0ZW0gIlRpY2tldGEgUGxhdGZvcm0iICJFdmVudC1kcml2ZW4gdGlja2V0IGJvb2tpbmcgc3lzdGVtIChDaG9yZW9ncmFwaHkgU2FnYSkiIHsKCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICMgSU5GUkFTVFJVQ1RVUkUKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgcG9zdGdyZXMgPSBjb250YWluZXIgIlBvc3RncmVTUUwiICJCb29raW5ncywgcGF5bWVudHMsIG91dGJveCAoQUNJRCkiICJEYXRhYmFzZSIKICAgICAgICAgICAgbW9uZ28gPSBjb250YWluZXIgIk1vbmdvREIiICJFdmVudCBjYXRhbG9nIChyZWFkLW9wdGltaXplZCkiICJEYXRhYmFzZSIKICAgICAgICAgICAgcmVkaXMgPSBjb250YWluZXIgIlJlZGlzIiAiRGlzdHJpYnV0ZWQgbG9ja3MgKFNFVCBOWCArIFRUTCksIGNhY2hpbmciICJDYWNoZSIKICAgICAgICAgICAga2Fma2EgPSBjb250YWluZXIgIkthZmthIiAiRXZlbnQgc3RyZWFtaW5nIHBsYXRmb3JtIChhdC1sZWFzdC1vbmNlLCBETFEpIiAiTWVzc2FnZSBCcm9rZXIiCiAgICAgICAgICAgIG1pbmlvID0gY29udGFpbmVyICJNaW5JTyIgIlRpY2tldCBQREYgc3RvcmFnZSIgIk9iamVjdCBTdG9yYWdlIgoKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgIyBFREdFCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgIGdhdGV3YXkgPSBjb250YWluZXIgIkFQSSBHYXRld2F5IiAiUm91dGluZywgSldUIHZhbGlkYXRpb24sIHJhdGUgbGltaXRpbmcsIGNpcmN1aXQgYnJlYWtlciIgIlNwcmluZyBDbG91ZCBHYXRld2F5IgoKICAgICAgICAgICAgYXV0aCA9IGNvbnRhaW5lciAiQXV0aCBTZXJ2aWNlIiAiQXV0aGVudGljYXRpb24sIEpXVCBpc3N1aW5nIiAiU3ByaW5nIEJvb3QiCgogICAgICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICAgICAjIENBVEFMT0cgKFJFQUQtSEVBVlkpCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgIGNhdGFsb2cgPSBjb250YWluZXIgIkV2ZW50IENhdGFsb2cgU2VydmljZSIgIkV2ZW50IHNlYXJjaCAoQ1FSUyByZWFkIG1vZGVsKSIgIlNwcmluZyBCb290IiB7CiAgICAgICAgICAgICAgICBjYXRhbG9nU2VydmljZSA9IGNvbXBvbmVudCAiQ2F0YWxvZyBTZXJ2aWNlIgogICAgICAgICAgICAgICAgY2F0YWxvZ1JlcG9zaXRvcnkgPSBjb21wb25lbnQgIkNhdGFsb2cgUmVwb3NpdG9yeSIKCiAgICAgICAgICAgICAgICBjYXRhbG9nU2VydmljZSAtPiBjYXRhbG9nUmVwb3NpdG9yeQogICAgICAgICAgICAgICAgY2F0YWxvZ1JlcG9zaXRvcnkgLT4gbW9uZ28KICAgICAgICAgICAgfQoKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgIyBCT09LSU5HIChXUklURSBDT1JFKQogICAgICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICAgICBib29raW5nID0gY29udGFpbmVyICJCb29raW5nIFNlcnZpY2UiICJTZWF0IHJlc2VydmF0aW9uICsgc2FnYSBpbml0aWF0b3IiICJTcHJpbmcgQm9vdCIgewogICAgICAgICAgICAgICAgY29udHJvbGxlciA9IGNvbXBvbmVudCAiQm9va2luZyBDb250cm9sbGVyIgogICAgICAgICAgICAgICAgc2VydmljZSA9IGNvbXBvbmVudCAiQm9va2luZyBTZXJ2aWNlIgogICAgICAgICAgICAgICAgbG9ja01hbmFnZXIgPSBjb21wb25lbnQgIlNlYXQgTG9jayBNYW5hZ2VyIiAiUmVkaXMgU0VUIE5YICsgVFRMIgogICAgICAgICAgICAgICAgcmVwb3NpdG9yeSA9IGNvbXBvbmVudCAiQm9va2luZyBSZXBvc2l0b3J5IgogICAgICAgICAgICAgICAgb3V0Ym94ID0gY29tcG9uZW50ICJPdXRib3ggUHVibGlzaGVyIiAiVHJhbnNhY3Rpb25hbCBvdXRib3giCgogICAgICAgICAgICAgICAgY29udHJvbGxlciAtPiBzZXJ2aWNlCiAgICAgICAgICAgICAgICBzZXJ2aWNlIC0+IGxvY2tNYW5hZ2VyCiAgICAgICAgICAgICAgICBzZXJ2aWNlIC0+IHJlcG9zaXRvcnkKICAgICAgICAgICAgICAgIHNlcnZpY2UgLT4gb3V0Ym94CgogICAgICAgICAgICAgICAgcmVwb3NpdG9yeSAtPiBwb3N0Z3JlcwogICAgICAgICAgICAgICAgbG9ja01hbmFnZXIgLT4gcmVkaXMKICAgICAgICAgICAgICAgIG91dGJveCAtPiBrYWZrYQogICAgICAgICAgICB9CgogICAgICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICAgICAjIFBBWU1FTlQKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgcGF5bWVudCA9IGNvbnRhaW5lciAiUGF5bWVudCBTZXJ2aWNlIiAiUHJvY2Vzc2VzIHBheW1lbnRzIChpZGVtcG90ZW50KSIgIlNwcmluZyBCb290IiB7CiAgICAgICAgICAgICAgICBjb25zdW1lciA9IGNvbXBvbmVudCAiS2Fma2EgQ29uc3VtZXIiCiAgICAgICAgICAgICAgICBwcm9jZXNzb3IgPSBjb21wb25lbnQgIlBheW1lbnQgUHJvY2Vzc29yIiAiSWRlbXBvdGVudCIKICAgICAgICAgICAgICAgIG91dGJveCA9IGNvbXBvbmVudCAiT3V0Ym94IFB1Ymxpc2hlciIKCiAgICAgICAgICAgICAgICBjb25zdW1lciAtPiBwcm9jZXNzb3IKICAgICAgICAgICAgICAgIHByb2Nlc3NvciAtPiBwYXltZW50R2F0ZXdheQogICAgICAgICAgICAgICAgcHJvY2Vzc29yIC0+IG91dGJveAoKICAgICAgICAgICAgICAgIGNvbnN1bWVyIC0+IGthZmthCiAgICAgICAgICAgICAgICBvdXRib3ggLT4ga2Fma2EKICAgICAgICAgICAgfQoKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgIyBUSUNLRVQgKFBERikKICAgICAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgdGlja2V0ID0gY29udGFpbmVyICJUaWNrZXQgU2VydmljZSIgIkdlbmVyYXRlcyB0aWNrZXQgUERGcyIgIlNwcmluZyBCb290IiB7CiAgICAgICAgICAgICAgICBjb25zdW1lciA9IGNvbXBvbmVudCAiS2Fma2EgQ29uc3VtZXIiCiAgICAgICAgICAgICAgICBnZW5lcmF0b3IgPSBjb21wb25lbnQgIlBERiBHZW5lcmF0b3IiCiAgICAgICAgICAgICAgICBzdG9yYWdlID0gY29tcG9uZW50ICJTdG9yYWdlIFNlcnZpY2UiCgogICAgICAgICAgICAgICAgY29uc3VtZXIgLT4gZ2VuZXJhdG9yCiAgICAgICAgICAgICAgICBnZW5lcmF0b3IgLT4gc3RvcmFnZQogICAgICAgICAgICAgICAgc3RvcmFnZSAtPiBtaW5pbwoKICAgICAgICAgICAgICAgIGNvbnN1bWVyIC0+IGthZmthCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICMgTk9USUZJQ0FUSU9OCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgIG5vdGlmaWNhdGlvbiA9IGNvbnRhaW5lciAiTm90aWZpY2F0aW9uIFNlcnZpY2UiICJTZW5kcyBlbWFpbC9TTVMgKGlkZW1wb3RlbnQpIiAiU3ByaW5nIEJvb3QiIHsKICAgICAgICAgICAgICAgIGNvbnN1bWVyID0gY29tcG9uZW50ICJLYWZrYSBDb25zdW1lciIKICAgICAgICAgICAgICAgIG5vdGlmaWVyID0gY29tcG9uZW50ICJOb3RpZmljYXRpb24gU2VuZGVyIiAiSWRlbXBvdGVudCIKCiAgICAgICAgICAgICAgICBjb25zdW1lciAtPiBub3RpZmllcgogICAgICAgICAgICAgICAgbm90aWZpZXIgLT4gbm90aWZpY2F0aW9uUHJvdmlkZXIKCiAgICAgICAgICAgICAgICBjb25zdW1lciAtPiBrYWZrYQogICAgICAgICAgICB9CgogICAgICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICAgICAjIFNZTkNIUk9OT1VTCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgIGdhdGV3YXkgLT4gYXV0aCAiQXV0aGVudGljYXRlIgogICAgICAgICAgICBnYXRld2F5IC0+IGNhdGFsb2cgIlNlYXJjaCBldmVudHMiCiAgICAgICAgICAgIGdhdGV3YXkgLT4gYm9va2luZyAiQ3JlYXRlIGJvb2tpbmciCgogICAgICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICAgICAjIEVWRU5UIFNUUkVBTVMgKFNBR0EpCiAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgIGJvb2tpbmcgLT4ga2Fma2EgImJvb2tpbmctY3JlYXRlZCIKICAgICAgICAgICAgYm9va2luZyAtPiBrYWZrYSAiYm9va2luZy1jYW5jZWxsZWQiCgogICAgICAgICAgICBrYWZrYSAtPiBwYXltZW50ICJjb25zdW1lIGJvb2tpbmctY3JlYXRlZCIKCiAgICAgICAgICAgIHBheW1lbnQgLT4ga2Fma2EgInBheW1lbnQtc3VjY2VzcyIKICAgICAgICAgICAgcGF5bWVudCAtPiBrYWZrYSAicGF5bWVudC1mYWlsZWQiCgogICAgICAgICAgICBrYWZrYSAtPiBib29raW5nICJjb25zdW1lIHBheW1lbnQtZmFpbGVkIChyZWxlYXNlIHNlYXRzKSIKCiAgICAgICAgICAgIGthZmthIC0+IHRpY2tldCAiY29uc3VtZSBwYXltZW50LXN1Y2Nlc3MiCiAgICAgICAgICAgIGthZmthIC0+IG5vdGlmaWNhdGlvbiAiY29uc3VtZSBwYXltZW50LXN1Y2Nlc3MiCgogICAgICAgIH0KCiAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAjIFVTRVIgSU5URVJBQ1RJT04KICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgIGNsaWVudCAtPiB0aWNrZXRhLmdhdGV3YXkgIkJyb3dzZSAmIHB1cmNoYXNlIHRpY2tldHMiCiAgICAgICAgb3JnYW5pemVyIC0+IHRpY2tldGEuZ2F0ZXdheSAiTWFuYWdlIGV2ZW50cyIKCiAgICB9CgogICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICMgVklFV1MKICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICB2aWV3cyB7CgogICAgICAgIHN5c3RlbUNvbnRleHQgdGlja2V0YSB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvTGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgdGlja2V0YSB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvTGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb21wb25lbnQgdGlja2V0YS5ib29raW5nIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgdGIKICAgICAgICB9CgogICAgICAgIGNvbXBvbmVudCB0aWNrZXRhLnBheW1lbnQgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b0xheW91dCB0YgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IHRpY2tldGEudGlja2V0IHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9MYXlvdXQgdGIKICAgICAgICB9CgogICAgICAgIGNvbXBvbmVudCB0aWNrZXRhLm5vdGlmaWNhdGlvbiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvTGF5b3V0IHRiCiAgICAgICAgfQoKICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgICMgRFlOQU1JQyBWSUVXIChTQUdBIEZMT1cpCiAgICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICBkeW5hbWljIHRpY2tldGEgIlRpY2tldFB1cmNoYXNlU2FnYSIgIkNob3Jlb2dyYXBoeSBTYWdhIiB7CgogICAgICAgICAgICBjbGllbnQgLT4gdGlja2V0YS5nYXRld2F5ICJQT1NUIC9ib29raW5ncyIKICAgICAgICAgICAgdGlja2V0YS5nYXRld2F5IC0+IHRpY2tldGEuYm9va2luZyAiQ3JlYXRlIGJvb2tpbmciCgogICAgICAgICAgICB0aWNrZXRhLmJvb2tpbmcgLT4gdGlja2V0YS5yZWRpcyAiTG9jayBzZWF0cyIKICAgICAgICAgICAgdGlja2V0YS5ib29raW5nIC0+IHRpY2tldGEucG9zdGdyZXMgIlBlcnNpc3QgYm9va2luZyIKICAgICAgICAgICAgdGlja2V0YS5ib29raW5nIC0+IHRpY2tldGEua2Fma2EgIlB1Ymxpc2ggYm9va2luZy1jcmVhdGVkIgoKICAgICAgICAgICAgdGlja2V0YS5rYWZrYSAtPiB0aWNrZXRhLnBheW1lbnQgIkNvbnN1bWUgYm9va2luZy1jcmVhdGVkIgogICAgICAgICAgICB0aWNrZXRhLnBheW1lbnQgLT4gcGF5bWVudEdhdGV3YXkgIlByb2Nlc3MgcGF5bWVudCIKCiAgICAgICAgICAgIHRpY2tldGEucGF5bWVudCAtPiB0aWNrZXRhLmthZmthICJQdWJsaXNoIHBheW1lbnQtc3VjY2VzcyIKCiAgICAgICAgICAgIHRpY2tldGEua2Fma2EgLT4gdGlja2V0YS50aWNrZXQgIkdlbmVyYXRlIHRpY2tldCIKICAgICAgICAgICAgdGlja2V0YS50aWNrZXQgLT4gdGlja2V0YS5taW5pbyAiU3RvcmUgUERGIgoKICAgICAgICAgICAgdGlja2V0YS5rYWZrYSAtPiB0aWNrZXRhLm5vdGlmaWNhdGlvbiAiU2VuZCBub3RpZmljYXRpb24iCiAgICAgICAgICAgIHRpY2tldGEubm90aWZpY2F0aW9uIC0+IG5vdGlmaWNhdGlvblByb3ZpZGVyICJEZWxpdmVyIGVtYWlsL1NNUyIKCiAgICAgICAgICAgIGF1dG9MYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgIyBTVFlMRVMKICAgICAgICAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgc2hhcGUgcGVyc29uCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMwODQyN2IKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiQ29udGFpbmVyIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM0MzhkZDUKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiRGF0YWJhc2UiIHsKICAgICAgICAgICAgICAgIHNoYXBlIGN5bGluZGVyCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNmNWRhODEKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiTWVzc2FnZSBCcm9rZXIiIHsKICAgICAgICAgICAgICAgIHNoYXBlIHBpcGUKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI2Q0NmE2YQogICAgICAgICAgICAgICAgY29sb3IgI2ZmZmZmZgogICAgICAgICAgICB9CiAgICAgICAgfQoKICAgICAgICB0aGVtZSBkZWZhdWx0CiAgICB9Cn0="
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "19",
+      "dimensions" : {
+        "height" : 2639,
+        "width" : 2430
+      },
+      "elements" : [ {
+        "id" : "6",
+        "x" : 989,
+        "y" : 2000
+      }, {
+        "id" : "8",
+        "x" : 239,
+        "y" : 2000
+      }, {
+        "id" : "9",
+        "x" : 1739,
+        "y" : 2000
+      }, {
+        "id" : "20",
+        "x" : 989,
+        "y" : 200
+      }, {
+        "id" : "21",
+        "x" : 989,
+        "y" : 800
+      }, {
+        "id" : "22",
+        "x" : 239,
+        "y" : 1400
+      }, {
+        "id" : "23",
+        "x" : 989,
+        "y" : 1400
+      }, {
+        "id" : "24",
+        "x" : 1739,
+        "y" : 1400
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-001",
+      "name" : "Component View: Ticketa Platform - Booking Service",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "25"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "27"
+      }, {
+        "id" : "28"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "33"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "35",
+      "dimensions" : {
+        "height" : 2639,
+        "width" : 1948
+      },
+      "elements" : [ {
+        "id" : "3",
+        "x" : 1297,
+        "y" : 1400
+      }, {
+        "id" : "9",
+        "x" : 393,
+        "y" : 2000
+      }, {
+        "id" : "36",
+        "x" : 239,
+        "y" : 200
+      }, {
+        "id" : "37",
+        "x" : 239,
+        "y" : 800
+      }, {
+        "id" : "38",
+        "x" : 239,
+        "y" : 1400
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-002",
+      "name" : "Component View: Ticketa Platform - Payment Service",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44",
+        "vertices" : [ {
+          "x" : 839,
+          "y" : 800
+        }, {
+          "x" : 839,
+          "y" : 1804
+        } ]
+      }, {
+        "id" : "46"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "47",
+      "dimensions" : {
+        "height" : 2639,
+        "width" : 1660
+      },
+      "elements" : [ {
+        "id" : "9",
+        "x" : 990,
+        "y" : 800
+      }, {
+        "id" : "10",
+        "x" : 240,
+        "y" : 2000
+      }, {
+        "id" : "48",
+        "x" : 240,
+        "y" : 200
+      }, {
+        "id" : "49",
+        "x" : 240,
+        "y" : 800
+      }, {
+        "id" : "50",
+        "x" : 240,
+        "y" : 1400
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-003",
+      "name" : "Component View: Ticketa Platform - Ticket Service",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "51"
+      }, {
+        "id" : "52"
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "55"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "57",
+      "dimensions" : {
+        "height" : 1940,
+        "width" : 1660
+      },
+      "elements" : [ {
+        "id" : "4",
+        "x" : 240,
+        "y" : 1399
+      }, {
+        "id" : "9",
+        "x" : 990,
+        "y" : 799
+      }, {
+        "id" : "58",
+        "x" : 240,
+        "y" : 199
+      }, {
+        "id" : "59",
+        "x" : 240,
+        "y" : 799
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-004",
+      "name" : "Component View: Ticketa Platform - Notification Service",
+      "order" : 6,
+      "relationships" : [ {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "64"
+      } ]
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "Container-001",
+      "metadataSymbols" : "SquareBrackets",
+      "styles" : {
+        "elements" : [ {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "background" : "#f5da81",
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#d46a6a",
+          "color" : "#ffffff",
+          "shape" : "Pipe",
+          "tag" : "Message Broker"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        } ]
+      },
+      "terminology" : { },
+      "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ]
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 4817,
+        "width" : 3140
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 244,
+        "y" : 160
+      }, {
+        "id" : "2",
+        "x" : 244,
+        "y" : 3677
+      }, {
+        "id" : "3",
+        "x" : 2469,
+        "y" : 3677
+      }, {
+        "id" : "4",
+        "x" : 2469,
+        "y" : 4277
+      }, {
+        "id" : "6",
+        "x" : 2469,
+        "y" : 1969
+      }, {
+        "id" : "7",
+        "x" : 2469,
+        "y" : 1369
+      }, {
+        "id" : "8",
+        "x" : 2469,
+        "y" : 2569
+      }, {
+        "id" : "9",
+        "x" : 969,
+        "y" : 2569
+      }, {
+        "id" : "10",
+        "x" : 969,
+        "y" : 3169
+      }, {
+        "id" : "11",
+        "x" : 969,
+        "y" : 1369
+      }, {
+        "id" : "12",
+        "x" : 1719,
+        "y" : 769
+      }, {
+        "id" : "13",
+        "x" : 1719,
+        "y" : 1369
+      }, {
+        "id" : "19",
+        "x" : 1719,
+        "y" : 1969
+      }, {
+        "id" : "35",
+        "x" : 1719,
+        "y" : 2569
+      }, {
+        "id" : "47",
+        "x" : 219,
+        "y" : 2569
+      }, {
+        "id" : "57",
+        "x" : 1719,
+        "y" : 3169
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Container-001",
+      "name" : "Container View: Ticketa Platform",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "18"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "34",
+        "vertices" : [ {
+          "x" : 1475,
+          "y" : 2301
+        } ]
+      }, {
+        "id" : "41",
+        "vertices" : [ {
+          "x" : 2169,
+          "y" : 3019
+        }, {
+          "x" : 2469,
+          "y" : 3648
+        } ]
+      }, {
+        "id" : "45",
+        "vertices" : [ {
+          "x" : 1569,
+          "y" : 2569
+        } ]
+      }, {
+        "id" : "54"
+      }, {
+        "id" : "56",
+        "vertices" : [ {
+          "x" : 819,
+          "y" : 2869
+        } ]
+      }, {
+        "id" : "62",
+        "vertices" : [ {
+          "x" : 2469,
+          "y" : 4127
+        } ]
+      }, {
+        "id" : "65",
+        "vertices" : [ {
+          "x" : 1662,
+          "y" : 2901
+        } ]
+      }, {
+        "id" : "66"
+      }, {
+        "id" : "67"
+      }, {
+        "id" : "68"
+      }, {
+        "id" : "69",
+        "vertices" : [ {
+          "x" : 1662,
+          "y" : 2536
+        } ]
+      }, {
+        "id" : "70",
+        "vertices" : [ {
+          "x" : 1381,
+          "y" : 2184
+        } ]
+      }, {
+        "id" : "71",
+        "vertices" : [ {
+          "x" : 1569,
+          "y" : 2869
+        } ]
+      }, {
+        "id" : "72",
+        "vertices" : [ {
+          "x" : 1569,
+          "y" : 2419
+        } ]
+      }, {
+        "id" : "73",
+        "vertices" : [ {
+          "x" : 1569,
+          "y" : 3019
+        } ]
+      }, {
+        "id" : "74",
+        "vertices" : [ {
+          "x" : 1756,
+          "y" : 2653
+        } ]
+      }, {
+        "id" : "75",
+        "vertices" : [ {
+          "x" : 819,
+          "y" : 2569
+        } ]
+      }, {
+        "id" : "76",
+        "vertices" : [ {
+          "x" : 1475,
+          "y" : 3136
+        } ]
+      }, {
+        "id" : "77",
+        "vertices" : [ {
+          "x" : 669,
+          "y" : 589
+        } ]
+      }, {
+        "id" : "79",
+        "vertices" : [ {
+          "x" : 669,
+          "y" : 3648
+        }, {
+          "x" : 969,
+          "y" : 2419
+        } ]
+      } ],
+      "softwareSystemId" : "5"
+    } ],
+    "dynamicViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "Choreography Saga",
+      "dimensions" : {
+        "height" : 3028,
+        "width" : 4570
+      },
+      "elementId" : "5",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 713
+      }, {
+        "id" : "3",
+        "x" : 3900,
+        "y" : 1871
+      }, {
+        "id" : "4",
+        "x" : 3900,
+        "y" : 2471
+      }, {
+        "id" : "6",
+        "x" : 2400,
+        "y" : 1363
+      }, {
+        "id" : "8",
+        "x" : 2400,
+        "y" : 763
+      }, {
+        "id" : "9",
+        "x" : 2400,
+        "y" : 163
+      }, {
+        "id" : "10",
+        "x" : 3900,
+        "y" : 163
+      }, {
+        "id" : "11",
+        "x" : 900,
+        "y" : 763
+      }, {
+        "id" : "19",
+        "x" : 1650,
+        "y" : 763
+      }, {
+        "id" : "35",
+        "x" : 3150,
+        "y" : 763
+      }, {
+        "id" : "47",
+        "x" : 3150,
+        "y" : 163
+      }, {
+        "id" : "57",
+        "x" : 3150,
+        "y" : 1363
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "TicketPurchaseSaga",
+      "name" : "Dynamic View: Ticketa Platform",
+      "order" : 7,
+      "relationships" : [ {
+        "description" : "POST /bookings",
+        "id" : "77",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Create booking",
+        "id" : "68",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Lock seats",
+        "id" : "32",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Persist booking",
+        "id" : "30",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Publish booking-created",
+        "id" : "34",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Consume booking-created",
+        "id" : "71",
+        "order" : "6",
+        "response" : false,
+        "vertices" : [ {
+          "x" : 2906,
+          "y" : 730
+        } ]
+      }, {
+        "description" : "Process payment",
+        "id" : "41",
+        "order" : "7",
+        "response" : false,
+        "vertices" : [ {
+          "x" : 3600,
+          "y" : 1213
+        }, {
+          "x" : 3900,
+          "y" : 1842
+        } ]
+      }, {
+        "description" : "Publish payment-success",
+        "id" : "45",
+        "order" : "8",
+        "response" : false,
+        "vertices" : [ {
+          "x" : 3093,
+          "y" : 495
+        } ]
+      }, {
+        "description" : "Generate ticket",
+        "id" : "75",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "Store PDF",
+        "id" : "54",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "Send notification",
+        "id" : "76",
+        "order" : "11",
+        "response" : false,
+        "vertices" : [ {
+          "x" : 2850,
+          "y" : 613
+        }, {
+          "x" : 3150,
+          "y" : 1213
+        } ]
+      }, {
+        "description" : "Deliver email/SMS",
+        "id" : "62",
+        "order" : "12",
+        "response" : false,
+        "vertices" : [ {
+          "x" : 3900,
+          "y" : 2321
+        } ]
+      } ]
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 1500,
+        "width" : 2300
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 199,
+        "y" : 160
+      }, {
+        "id" : "2",
+        "x" : 199,
+        "y" : 860
+      }, {
+        "id" : "3",
+        "x" : 1649,
+        "y" : 260
+      }, {
+        "id" : "4",
+        "x" : 1649,
+        "y" : 860
+      }, {
+        "id" : "5",
+        "x" : 899,
+        "y" : 560
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "generatedKey" : true,
+      "key" : "SystemContext-001",
+      "name" : "System Context View: Ticketa Platform",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "42"
+      }, {
+        "id" : "63"
+      }, {
+        "id" : "78"
+      }, {
+        "id" : "80"
+      } ],
+      "softwareSystemId" : "5"
+    } ]
+  }
+}
