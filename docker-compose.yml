@@ -1,17 +1,13 @@
 version: "3.9"
 
 services:
-  # --- INFRASTRUCTURE ---
+  # --- ИНФРАСТРУКТУРА ---
+
   discovery-service:
     build: ./discovery-service
     container_name: ticketa-discovery
     ports:
       - "8761:8761"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - ticketa-network
 
@@ -25,10 +21,10 @@ services:
       POSTGRES_PASSWORD: ticketa123
     ports:
       - "5432:5432"
-    networks:
-      - ticketa-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ticketa-network
 
   mongodb:
     image: mongo:7
@@ -36,10 +32,10 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    networks:
-      - ticketa-network
     volumes:
       - mongo_data:/data/db
+    networks:
+      - ticketa-network
 
   redis:
     image: redis:7
@@ -51,32 +47,37 @@ services:
       - ticketa-network
 
   # --- API GATEWAY ---
+
   api-gateway:
     build: ./api-gateway
     container_name: ticketa-api-gateway
     ports:
       - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_DATA_REDIS_HOST=redis
     depends_on:
-      discovery-service:
-        condition: service_healthy
+      - discovery-service
+      - redis
     networks:
       - ticketa-network
 
-  # --- MICROSERVICES ---
+  # --- МИКРОСЕРВИСЫ ---
+
   auth-service:
     build: ./auth-service
     container_name: ticketa-auth-service
     env_file:
       - ./auth-service/local.env
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketa
     ports:
       - "8081:8081"
     depends_on:
-      discovery-service:
-        condition: service_healthy
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_started
+      - discovery-service
+      - postgres
+      - redis
     networks:
       - ticketa-network
 
@@ -85,15 +86,14 @@ services:
     container_name: ticketa-event-catalog
     env_file:
       - ./event-catalog-service/local.env
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/ticketa
     ports:
       - "8082:8082"
     depends_on:
-      discovery-service:
-        condition: service_healthy
-      mongodb:
-        condition: service_started
-      redis:
-        condition: service_started
+      - discovery-service
+      - mongodb
     networks:
       - ticketa-network
 
@@ -102,15 +102,14 @@ services:
     container_name: ticketa-booking
     env_file:
       - ./booking-service/local.env
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketa
     ports:
       - "8083:8083"
     depends_on:
-      discovery-service:
-        condition: service_healthy
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_started
+      - discovery-service
+      - postgres
     networks:
       - ticketa-network
 
@@ -119,13 +118,13 @@ services:
     container_name: ticketa-notification
     env_file:
       - ./notification-ticket-service/local.env
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     ports:
       - "8084:8084"
     depends_on:
-      discovery-service:
-        condition: service_healthy
-      postgres:
-        condition: service_started
+      - discovery-service
+      - postgres
     networks:
       - ticketa-network
 
