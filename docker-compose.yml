@@ -68,9 +68,6 @@ services:
     container_name: ticketa-auth-service
     env_file:
       - ./auth-service/local.env
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketa
     ports:
       - "8081:8081"
     depends_on:
@@ -85,9 +82,6 @@ services:
     container_name: ticketa-event-catalog
     env_file:
       - ./event-catalog-service/local.env
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/ticketa
     ports:
       - "8082:8082"
     depends_on:
@@ -101,9 +95,6 @@ services:
     container_name: ticketa-booking
     env_file:
       - ./booking-service/local.env
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticketa
     ports:
       - "8083:8083"
     depends_on:
@@ -117,8 +108,6 @@ services:
     container_name: ticketa-notification
     env_file:
       - ./notification-ticket-service/local.env
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     ports:
       - "8084:8084"
     depends_on:
