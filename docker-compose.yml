@@ -53,9 +53,8 @@ services:
     container_name: ticketa-api-gateway
     ports:
       - "8080:8080"
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
-      - SPRING_DATA_REDIS_HOST=redis
+    env_file:
+      - ./api-gateway/local.env
     depends_on:
       - discovery-service
       - redis
