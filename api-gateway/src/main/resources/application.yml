@@ -6,8 +6,8 @@ spring:
     name: api-gateway
   data:
     redis:
-      host: ticketa-redis
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   cloud:
     gateway:
       routes:
@@ -68,4 +68,4 @@ jwt:
 eureka:
   client:
     service-url:
-      defaultZone: http://ticketa-discovery:8761/eureka/
+      defaultZone: ${EUREKA_SERVER}
