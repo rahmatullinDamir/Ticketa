@@ -1,6 +1,19 @@
 version: "3.9"
 
 services:
+  # --- INFRASTRUCTURE ---
+  discovery-service:
+    build: ./discovery-service
+    container_name: ticketa-discovery
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ticketa-network
 
   postgres:
     image: postgres:16
@@ -12,6 +25,8 @@ services:
       POSTGRES_PASSWORD: ticketa123
     ports:
       - "5432:5432"
+    networks:
+      - ticketa-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -21,6 +36,8 @@ services:
     restart: always
     ports:
       - "27017:27017"
+    networks:
+      - ticketa-network
     volumes:
       - mongo_data:/data/db
 
@@ -30,19 +47,22 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      - ticketa-network
 
+  # --- API GATEWAY ---
   api-gateway:
     build: ./api-gateway
     container_name: ticketa-api-gateway
     ports:
       - "8080:8080"
     depends_on:
-      - auth-service
-      - event-catalog-service
-      - booking-service
+      discovery-service:
+        condition: service_healthy
     networks:
       - ticketa-network
 
+  # --- MICROSERVICES ---
   auth-service:
     build: ./auth-service
     container_name: ticketa-auth-service
@@ -51,8 +71,12 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
-      - redis
+      discovery-service:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - ticketa-network
 
@@ -64,8 +88,12 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - mongodb
-      - redis
+      discovery-service:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - ticketa-network
 
@@ -77,8 +105,12 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - postgres
-      - redis
+      discovery-service:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - ticketa-network
 
@@ -90,12 +122,16 @@ services:
     ports:
       - "8084:8084"
     depends_on:
-      - postgres
+      discovery-service:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     networks:
       - ticketa-network
 
 networks:
   ticketa-network:
+    driver: bridge
 
 volumes:
   postgres_data:

@@ -32,3 +32,11 @@ jwt:
     expiration: ${JWT_EXPIRATION}
   refresh-token:
     expiration: ${JWT_EXPIRATION}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://ticketa-discovery:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
