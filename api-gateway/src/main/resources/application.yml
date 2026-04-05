@@ -10,36 +10,40 @@ spring:
       port: 6379
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
-            - id: auth-service
-              uri: lb://auth-service
-              predicates:
-                - Path=/api/v1/auth/**
-              filters:
-                - StripPrefix=2
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 5
-                    key-resolver: "#{@ipKeyResolver}"
-                - name: CircuitBreaker
-                  args:
-                    name: authServiceCircuitBreaker
-                    fallbackUri: forward:/fallback/auth
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                key-resolver: "#{@ipKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: authServiceCircuitBreaker
+                fallbackUri: forward:/fallback/auth
 
-            - id: event-catalog-service
-              uri: lb://event-catalog-service
-              predicates:
-                - Path=/api/v1/events/**
-              filters:
-                - StripPrefix=2
-                - AuthenticationFilter
-                - name: RequestRateLimiter
-                  args:
-                    redis-rate-limiter.replenishRate: 20
-                    redis-rate-limiter.burstCapacity: 50
-                    key-resolver: "#{@userKeyResolver}"
+        - id: event-catalog-service
+          uri: lb://event-catalog-service
+          predicates:
+            - Path=/api/v1/events/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 50
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: eventServiceCircuitBreaker
+                fallbackUri: forward:/fallback/events
+
 
 resilience4j:
   circuitbreaker:
@@ -52,7 +56,6 @@ resilience4j:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
   timelimiter:
     instances:
       authServiceCircuitBreaker:
