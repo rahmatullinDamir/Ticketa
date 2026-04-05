@@ -36,7 +36,7 @@ jwt:
 eureka:
   client:
     service-url:
-      defaultZone: http://ticketa-discovery:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
