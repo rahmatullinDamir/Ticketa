@@ -1,18 +1,64 @@
-spring:
-  application:
-    name: api-gateway
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-
 server:
   port: 8080
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,gateway
+spring:
+  application:
+    name: api-gateway
+  spring:
+    cloud:
+      gateway:
+        routes:
+          - id: auth-service
+            uri: lb://auth-service
+            predicates:
+              - Path=/api/v1/auth/**
+            filters:
+              - name: RequestRateLimiter
+                args:
+                  redis-rate-limiter.replenishRate: 5
+                  key-resolver: "#{@ipKeyResolver}"
+
+              - name: CircuitBreaker
+                args:
+                  name: authServiceCircuitBreaker
+                  fallbackUri: forward:/fallback/auth
+
+          - id: event-catalog-service
+            uri: lb://event-catalog-service
+            predicates:
+              - Path=/api/v1/events/**
+            filters:
+              - AuthenticationFilter
+              - name: RequestRateLimiter
+                args:
+                  redis-rate-limiter.replenishRate: 20
+                  redis-rate-limiter.burstCapacity: 50
+                  key-resolver: "#{@userKeyResolver}"
+
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      authServiceCircuitBreaker:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+      eventServiceCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+  timelimiter:
+    instances:
+      authServiceCircuitBreaker:
+        timeoutDuration: 2s
+      eventServiceCircuitBreaker:
+        timeoutDuration: 3s
+jwt:
+  secret: ${JWT_SECRET}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://ticketa-discovery:8761/eureka/
