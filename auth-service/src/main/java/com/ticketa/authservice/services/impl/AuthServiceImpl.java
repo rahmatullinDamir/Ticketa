@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = UUID.randomUUID().toString();
 
         redisTemplate.opsForValue().set(
-                "refresh_tokens:" + refreshToken,
+                "refresh:tokens:" + refreshToken,
                 user.getEmail(),
                 Duration.ofDays(7)
         );
